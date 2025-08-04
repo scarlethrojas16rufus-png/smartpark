@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPark System</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #006064;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    main {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      color: #006064;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+    pre {
+      background: #eceff1;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #004d40;
+      color: white;
+      margin-top: 2rem;
+    }
+    .button-link {
+      display: inline-block;
+      background-color: #00796b;
+      color: white;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SmartPark System</h1>
+    <p>Colegio San Martín de Porres – La Serena, Coquimbo</p>
+  </header>
+  <main>
+    <h2>¿En qué consiste nuestro proyecto?</h2>
+    <p>
+      Este sistema automatizado de estacionamiento tiene como objetivo mejorar la eficiencia, comodidad y control dentro de espacios vehiculares mediante tres circuitos distintos, cada uno diseñado para una función específica dentro del mismo sistema integrado.
+    </p>
+
+    <h2>Circuito 1: Control de acceso y conteo de espacios</h2>
+    <p>
+      Utiliza sensores infrarrojos para detectar entradas y salidas de vehículos, un servomotor para abrir/cerrar la barrera, y una pantalla LCD para mostrar los espacios disponibles.
+    </p>
+    <pre><code>#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+#include &lt;Servo.h&gt;
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo servo;
+const int IRentrada = 2;
+const int IRsalida = 3;
+int espacios = 5;
+const int maxEspacios = 5;
+int flag1 = 0;
+int flag2 = 0;
+void setup() {
+  lcd.begin();
+  lcd.backlight();
+  servo.attach(4);
+  pinMode(IRentrada, INPUT);
+  pinMode(IRsalida, INPUT);
+  lcd.setCursor(0, 0);
+  lcd.print("Espacios:");
+  lcd.setCursor(10, 0);
+  lcd.print(espacios);
+  servo.write(0);
+}
+void loop() {
+  if (digitalRead(IRentrada) == LOW && flag1 == 0 && espacios &gt; 0) {
+    flag1 = 1;
+    espacios--;
+    servo.write(90);
+    lcd.setCursor(10, 0);
+    lcd.print(" ");
+    lcd.setCursor(10, 0);
+    lcd.print(espacios);
+    delay(2000);
+    servo.write(0);
+  }
+  if (digitalRead(IRentrada) == HIGH) flag1 = 0;
+  if (digitalRead(IRsalida) == LOW && flag2 == 0 && espacios &lt; maxEspacios) {
+    flag2 = 1;
+    espacios++;
+    servo.write(90);
+    lcd.setCursor(10, 0);
+    lcd.print(" ");
+    lcd.setCursor(10, 0);
+    lcd.print(espacios);
+    delay(2000);
+    servo.write(0);
+  }
+  if (digitalRead(IRsalida) == HIGH) flag2 = 0;
+}</code></pre>
+
+    <h2>Circuito 2: Luces RGB de ocupación</h2>
+    <p>
+      Este circuito indica con luces si un estacionamiento está disponible (verde) u ocupado (rojo) mediante un sensor IR individual por puesto.
+    </p>
+    <pre><code>int sensorIR = 2;
+int ledVerde = 3;
+int ledRojo = 4;
+void setup() {
+  pinMode(sensorIR, INPUT);
+  pinMode(ledVerde, OUTPUT);
+  pinMode(ledRojo, OUTPUT);
+}
+void loop() {
+  if (digitalRead(sensorIR) == LOW) {
+    digitalWrite(ledRojo, HIGH);
+    digitalWrite(ledVerde, LOW);
+  } else {
+    digitalWrite(ledRojo, LOW);
+    digitalWrite(ledVerde, HIGH);
+  }
+}</code></pre>
+
+    <h2>Circuito 3: Mensaje de salida en LCD</h2>
+    <p>
+      Una pantalla LCD muestra un mensaje de despedida cada vez que un vehículo abandona el lugar, activado por un sensor IR.
+    </p>
+    <pre><code>#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+int sensorSalida = 2;
+void setup() {
+  lcd.begin();
+  lcd.backlight();
+  pinMode(sensorSalida, INPUT);
+  lcd.setCursor(0, 0);
+  lcd.print("SmartPark System");
+}
+void loop() {
+  if (digitalRead(sensorSalida) == LOW) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Gracias por su visita");
+    delay(3000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("SmartPark System");
+  }
+}</code></pre>
+
+    <h2>¿Te pareció interesante este proyecto?</h2>
+    <a class="button-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfwpT8DlCcwaIwi6xSpYyWWu7WxnYqhaXCn7ayWUYgzhhLzaA/viewform?usp=sharing" target="_blank">Votar aquí</a>
+
+    <h2>¿Dónde puedo saber más?</h2>
+    <ul>
+      <li><a href="https://www.arduino.cc" target="_blank">Plataforma oficial de Arduino</a></li>
+      <li><a href="https://components101.com" target="_blank">Documentación de sensores IR y servomotores</a></li>
+      <li><a href="https://youtu.be/-KiqeNV50gg" target="_blank">Tutorial de conexiones – ProyectaTuMente</a></li>
+    </ul>
+  </main>
+  <footer>
+    Página creada por estudiantes del Colegio San Martín de Porres:<br>
+    Scarlett Rojas, Abigail Centurión, Francisco Valenzuela.
+  </footer>
+</body>
+</html>
