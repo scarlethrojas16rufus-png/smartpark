@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark System - Proyecto Escolar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e9f5ff;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #007acc;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+    }
+    section {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .circuito {
+      background: white;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    .codigo {
+      background: #f0f0f0;
+      padding: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .btn-formulario {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #007acc;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    footer {
+      background-color: #003f66;
+      color: white;
+      text-align: center;
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SmartPark System</h1>
+    <p>Proyecto de Estacionamiento Automatizado - Colegio San Martín de Porres, La Serena - Coquimbo</p>
+  </header>
+  <section>
+    
+<h2>¿Cuál es nuestro objetivo?</h2>
+<p>Nuestro objetivo con SmartPark System es demostrar, a través de una maqueta funcional, cómo un sistema de estacionamiento automatizado puede optimizar el control de acceso, mejorar la organización de espacios y facilitar la experiencia del usuario.</p>
+
+<p>Queremos que este proyecto sea una representación clara de cómo la electrónica, la programación y la creatividad pueden trabajar juntas para resolver problemas cotidianos.</p>
+
+<h2>¿Cómo funciona?</h2>
+<p>La maqueta utiliza sensores infrarrojos para detectar la entrada y salida de vehículos. Cuando un auto se aproxima, el sistema evalúa si hay espacios disponibles:</p>
+<ul>
+  <li>Si los hay, una barrera controlada por un servomotor se levanta y la pantalla LCD actualiza la cantidad de lugares libres.</li>
+  <li>Si no hay disponibilidad, la barrera permanece cerrada y las luces LED RGB indican que el estacionamiento está lleno.</li>
+</ul>
+<p>Además, al salir, el usuario recibe un mensaje en la pantalla LCD, creando una experiencia más interactiva.</p>
+
+<h2>Características principales:</h2>
+<ul>
+  <li>Conteo automático de vehículos.</li>
+  <li>Señalización visual clara mediante luces LED RGB.</li>
+  <li>Mensajes en pantalla LCD para informar y despedir al usuario.</li>
+  <li>Sistema modular, fácil de ampliar y modificar.</li>
+</ul>
+<p><strong>A continuación se dará a conocer el código que se utilizó para cada circuito independiente.</strong></p>
+<h2>Primer circuito: Contador de autos con LCD y servomotor</h2>
+    <div class="circuito">
+      <p>Este circuito utiliza sensores infrarrojos (IR) para detectar la entrada y salida de vehículos. Un servomotor controla una barrera de paso, y una pantalla LCD muestra la cantidad de espacios disponibles.</p>
+      <div class="codigo">
+#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+#include &lt;Servo.h&gt;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo servo;
+
+const int IRentrada = 2;
+const int IRsalida = 3;
+int espacios = 5;
+const int maxEspacios = 5;
+
+void setup() {
+  lcd.begin();
+  servo.attach(9);
+  pinMode(IRentrada, INPUT);
+  pinMode(IRsalida, INPUT);
+  lcd.print("Espacios: ");
+  lcd.print(espacios);
+}
+
+void loop() {
+  if (digitalRead(IRentrada) == LOW && espacios > 0) {
+    espacios--;
+    servo.write(90);
+    delay(2000);
+    servo.write(0);
+  }
+  if (digitalRead(IRsalida) == LOW && espacios < maxEspacios) {
+    espacios++;
+  }
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Espacios: ");
+  lcd.print(espacios);
+  delay(500);
+}
+      </div>
+    </div>
+
+    <h2>Segundo circuito: Luces RGB</h2>
+    <div class="circuito">
+      <p>Este circuito activa luces RGB que cambian de color dependiendo si hay espacios disponibles o no. Verde indica disponible, rojo indica lleno.</p>
+      <div class="codigo">
+int ledRojo = 10;
+int ledVerde = 11;
+
+void setup() {
+  pinMode(ledRojo, OUTPUT);
+  pinMode(ledVerde, OUTPUT);
+}
+
+void loop() {
+  if (espacios == 0) {
+    digitalWrite(ledRojo, HIGH);
+    digitalWrite(ledVerde, LOW);
+  } else {
+    digitalWrite(ledRojo, LOW);
+    digitalWrite(ledVerde, HIGH);
+  }
+  delay(500);
+}
+      </div>
+    </div>
+
+    <h2>Tercer circuito: Mensaje de salida con LCD</h2>
+    <div class="circuito">
+      <p>Este circuito utiliza un sensor infrarrojo que detecta si un vehículo se aproxima a la salida, mostrando un mensaje de despedida en la pantalla LCD.</p>
+      <div class="codigo">
+#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+const int sensorSalida = 4;
+
+void setup() {
+  lcd.begin();
+  pinMode(sensorSalida, INPUT);
+}
+
+void loop() {
+  if (digitalRead(sensorSalida) == LOW) {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Gracias por su visita");
+    delay(3000);
+    lcd.clear();
+  }
+}
+      </div>
+    </div>
+
+    <h2>¿Te pareció interesante este proyecto?</h2>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfwpT8DlCcwaIwi6xSpYyWWu7WxnYqhaXCn7ayWUYgzhhLzaA/viewform" class="btn-formulario" target="_blank">Responde aquí</a>
+
+    <h2>¿Dónde puedo saber más?</h2>
+    <ul>
+      <li><a href="https://www.arduino.cc/" target="_blank">Sitio oficial de Arduino</a></li>
+      <li><a href="https://proyectatumente.com/" target="_blank">Proyecta tu mente (canal educativo)</a></li>
+      <li><a href="https://es.wikipedia.org/wiki/Arduino" target="_blank">Arduino en Wikipedia</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Hecho por estudiantes del Colegio San Martín de Porres: Abigail Centurión, Scarlett Rojas y Francisco Valenzuela.</p>
+  </footer>
+</body>
+</html>
